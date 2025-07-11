@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gradient-to-br from-purple-700 to-indigo-800 min-h-screen flex items-center justify-center">
+<head>
+  <meta charset="UTF-8" />
+  <title>🚀 XemzID</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .fade-in { animation: fadeIn 0.8s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+
+<body class="w-full flex items-center justify-center px-4">
+
+  <!-- LOGIN SECTION -->
+  <div id="loginSection" class="w-full max-w-md bg-white/10 backdrop-blur rounded-2xl shadow-lg p-8 text-center text-white">
+    <h1 class="text-xl font-bold mb-4">🔐 Login Panel</h1>
+    <input id="loginUsername" type="text" placeholder="Username"
+      class="w-full mb-4 px-4 py-3 rounded-full bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+
+    <input id="loginPassword" type="password" placeholder="Password"
+      class="w-full mb-6 px-4 py-3 rounded-full bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+
+    <button id="loginBtn"
+      class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-3 rounded-full transition duration-300">
+      Login
+    </button>
+    <p id="loginError" class="text-red-300 text-sm mt-4 hidden"></p>
+  </div>
+
+  <!-- CREATE PANEL SECTION -->
+  <div id="panelSection" class="hidden w-full max-w-md bg-white/10 backdrop-blur rounded-2xl shadow-lg p-8 text-center text-white">
+    <div class="flex justify-between mb-4">
+      <h1 class="text-xl font-bold">🚀 Create Panel</h1>
+      <button id="logoutBtn" class="text-sm text-red-300 hover:text-red-500 underline">Logout</button>
+    </div>
+    <p class="text-sm mb-6">Isi nama panel & pilih plan ➜ klik Create untuk deploy server Pterodactyl Anda.</p>
+
+    <input id="panelName" type="text" placeholder="Panel Name"
+      class="w-full mb-4 px-4 py-3 rounded-full bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+
+    <select id="panelPlan"
+      class="w-full mb-6 px-4 py-3 rounded-full bg-white/20 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <option value="">-- Pilih Plan --</option>
+      <option value="1gb-v2">1GB</option>
+      <option value="2gb-v2">2GB</option>
+      <option value="3gb-v2">3GB</option>
+      <option value="4gb-v2">4GB</option>
+      <option value="5gb-v2">5GB</option>
+      <option value="10gb-v2">10GB</option>
+      <option value="unlimited-v2">Unlimited</option>
+    </select>
+
+    <button id="createPanelBtn"
+      class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-3 rounded-full transition duration-300">
+      Create Panel
+    </button>
+
+    <pre id="result" class="whitespace-pre-wrap text-sm mt-6 bg-white/10 rounded p-4 hidden fade-in"></pre>
+    <pre id="error" class="whitespace-pre-wrap text-sm text-red-300 mt-4 hidden"></pre>
+  </div>
+
+  <script>
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const loginSection = document.getElementById('loginSection');
+    const panelSection = document.getElementById('panelSection');
+    const loginError = document.getElementById('loginError');
+
+    if (localStorage.getItem('currentUser')) {
+      showPanel();
+    }
+
+    loginBtn.onclick = () => {
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const found = users.find(x => x.username === u && x.password === p);
+
+      if (found) {
+        localStorage.setItem('currentUser', u);
+        showPanel();
+      } else {
+        loginError.textContent = "❌ Username atau password salah!";
+        loginError.classList.remove('hidden');
+      }
+    };
+
+    logoutBtn.onclick = () => {
+      localStorage.removeItem('currentUser');
+      showLogin();
+    };
+
+    function showPanel() {
+      loginSection.classList.add('hidden');
+      panelSection.classList.remove('hidden');
+    }
+
+    function showLogin() {
+      loginSection.classList.remove('hidden');
+      panelSection.classList.add('hidden');
+    }
+
+    window.onload = () => {
+      const currentUser = localStorage.getItem('currentUser');
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const stillExist = users.find(x => x.username === currentUser);
+      if (!stillExist) {
+        localStorage.removeItem('currentUser');
+        showLogin();
+      }
+    };
+
+    function tanggal() {
+      return new Date().toLocaleString();
+    }
+
+    const planSpecs = {
+      "1gb-v2": { ram: 1024, disk: 1024, cpu: 50 },
+      "2gb-v2": { ram: 2048, disk: 2048, cpu: 50 },
+      "3gb-v2": { ram: 3072, disk: 3072, cpu: 50 },
+      "4gb-v2": { ram: 4096, disk: 4096, cpu: 50 },
+      "5gb-v2": { ram: 5120, disk: 5120, cpu: 50 },
+      "10gb-v2": { ram: 10240, disk: 10240, cpu: 50 },
+      "unlimited-v2": { ram: 0, disk: 0, cpu: 0 }
+    };
+
+    document.getElementById('createPanelBtn').onclick = async () => {
+      const panelName = document.getElementById('panelName').value.trim();
+      const plan = document.getElementById('panelPlan').value;
+      const resultDiv = document.getElementById('result');
+      const errorDiv = document.getElementById('error');
+
+      resultDiv.classList.add('hidden');
+      errorDiv.classList.add('hidden');
+
+      if (!panelName || !plan || !(plan in planSpecs)) {
+        errorDiv.textContent = "❌ Isi nama panel & pilih plan!";
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      const specs = planSpecs[plan];
+      resultDiv.textContent = "⏳ Membuat akun...";
+      resultDiv.classList.remove('hidden');
+
+      const username = panelName.toLowerCase().replace(/\s+/g,''); // NO RANDOM
+      const email = `${username}@Xemz.id`; // Fix domain custom
+      const password = username + "123";
+      const name = panelName.charAt(0).toUpperCase() + panelName.slice(1);
+
+      try {
+        const userRes = await fetch('/api/relay', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "create_user",
+            payload: {
+              email, username, first_name: name, last_name: "Server", password
+            }
+          })
+        });
+        const userData = await userRes.json();
+        console.log("=== RAW userData ===", userData);
+
+        if (userData.errors) throw new Error(JSON.stringify(userData.errors));
+        if (!userData.attributes) throw new Error("Response missing attributes!");
+
+        const userId = userData.attributes.id;
+
+        resultDiv.textContent += "\n✅ Akun berhasil. Membuat server...";
+
+        const serverRes = await fetch('/api/relay', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "create_server",
+            payload: {
+              name: name + "-server",
+              user: userId,
+              egg: 15,
+              nest: 5,
+              docker_image: "ghcr.io/parkervcp/yolks:nodejs_18",
+              startup: "npm start",
+              limits: {
+                memory: specs.ram, swap: 0, disk: specs.disk, io: 500, cpu: specs.cpu
+              },
+              feature_limits: { databases: 1, backups: 1, allocations: 1 },
+              deploy: { locations: [1], dedicated_ip: false, port_range: [] },
+              environment: {
+                INST: "npm", USER_UPLOAD: "0",
+                AUTO_UPDATE: "0", CMD_RUN: "npm start"
+              }
+            }
+          })
+        });
+        const serverData = await serverRes.json();
+        console.log("=== RAW serverData ===", serverData);
+
+        if (serverData.errors) throw new Error(JSON.stringify(serverData.errors));
+        if (!serverData.attributes) throw new Error("Server response missing attributes!");
+
+        resultDiv.textContent += `
+✅ Server Created!
+👤 Username: ${username}
+📧 Email: ${email}
+🔑 Password: ${password}
+🗂️ Server ID: ${serverData.attributes.id}
+📅 Tanggal: ${tanggal()}
+`;
+      } catch (err) {
+        errorDiv.textContent = "❌ Error: " + err.message;
+        errorDiv.classList.remove('hidden');
+        resultDiv.classList.add('hidden');
+      }
+    };
+  </script>
+</body>
+</html> 

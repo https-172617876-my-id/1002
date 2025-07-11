@@ -9,8 +9,8 @@ const app = express();
 const PORT = 3000;
 
 // 🔧 Konfigurasi
-const PANEL_URL = "https://xemz.my.id";
-const API_KEY = "apixxxx"; // Ganti dengan API key admin kamu
+const PANEL_URL = "https://kenja-ganteng.kenjaapublik.my.id/";
+const API_KEY = "ptla_RKC13A19K8mEKJrJidUtlKyFZrkh1dkTqCGymPvxM5Z"; // Ganti dengan API key admin kamu
 const NEST_ID = 5;
 const EGG_ID = 15;
 const LOCATION_ID = 1;

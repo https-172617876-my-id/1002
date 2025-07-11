@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Buat Panel Otomatis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-700 to-indigo-800 text-white flex items-center justify-center p-4">
+
+  <div class="bg-white/10 backdrop-blur p-6 rounded-2xl shadow-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">🚀 Buat Panel Pterodactyl</h1>
+
+    <form id="panelForm" class="space-y-4">
+      <input id="panelName" type="text" placeholder="Nama Panel"
+        class="w-full p-3 rounded-xl bg-white/20 placeholder-white/70" />
+
+      <select id="plan" class="w-full p-3 rounded-xl bg-white/20 text-white">
+        <option value="">-- Pilih Plan --</option>
+        <option value="1">1 GB</option>
+        <option value="2">2 GB</option>
+        <option value="3">3 GB</option>
+      </select>
+
+      <button type="submit"
+        class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold">
+        Buat Sekarang
+      </button>
+    </form>
+
+    <div id="loading" class="text-sm mt-4 hidden">⏳ Memproses...</div>
+    <pre id="result" class="whitespace-pre-wrap text-sm mt-4 bg-black/30 p-4 rounded-xl hidden"></pre>
+    <pre id="error" class="text-sm text-red-300 mt-2 hidden"></pre>
+  </div>
+
+  <script>
+    const form = document.getElementById("panelForm");
+    const result = document.getElementById("result");
+    const error = document.getElementById("error");
+    const loading = document.getElementById("loading");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      result.classList.add("hidden");
+      error.classList.add("hidden");
+      loading.classList.remove("hidden");
+
+      const name = document.getElementById("panelName").value.trim();
+      const plan = document.getElementById("plan").value;
+
+      if (!name || !plan) {
+        error.textContent = "❌ Isi semua field.";
+        error.classList.remove("hidden");
+        loading.classList.add("hidden");
+        return;
+      }
+
+      try {
+        const res = await fetch("/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ name, plan })
+        });
+
+        const data = await res.json();
+        loading.classList.add("hidden");
+
+        if (!res.ok) {
+          error.textContent = "❌ Gagal: " + (data.error || "Terjadi kesalahan.");
+          error.classList.remove("hidden");
+          return;
+        }
+
+        result.innerText = `
+✅ Panel berhasil dibuat!
+
+👤 Username : ${data.username}
+📧 Email    : ${data.email}
+🔑 Password : ${data.password}
+🆔 Server ID: ${data.server_id}
+        `.trim();
+        result.classList.remove("hidden");
+
+      } catch (err) {
+        loading.classList.add("hidden");
+        error.textContent = "❌ Gagal konek ke relay.js";
+        error.classList.remove("hidden");
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,97 +1,111 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Buat Panel Otomatis</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auto Panel Creator</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-purple-700 to-indigo-800 text-white flex items-center justify-center p-4">
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+  <header class="bg-white shadow p-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-bold text-indigo-600">Kenjaa Panel Creator</h1>
+    </div>
+  </header>
 
-  <div class="bg-white/10 backdrop-blur p-6 rounded-xl shadow-lg w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-4 text-center">🚀 Buat Panel Pterodactyl</h1>
+  <main class="flex-grow container mx-auto p-4">
+    <div class="max-w-xl mx-auto bg-white rounded shadow p-6 mt-6">
+      <h2 class="text-2xl font-semibold text-indigo-700 text-center mb-6">Create Your Panel</h2>
+      <form id="panelForm" class="space-y-4">
+        <div>
+          <label for="username" class="block font-medium text-gray-700">Username</label>
+          <input type="text" id="username" required placeholder="e.g. kenja123"
+            class="w-full border rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500"/>
+        </div>
+        <div>
+          <label for="plan" class="block font-medium text-gray-700">Select Plan</label>
+          <select id="plan" required class="w-full border rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500">
+            <option value="">-- Choose a plan --</option>
+            <option value="1gb-v2">1GB - 40% CPU - 1GB Disk</option>
+            <option value="2gb-v2">2GB - 60% CPU - 2GB Disk</option>
+            <option value="3gb-v2">3GB - 90% CPU - 2GB Disk</option>
+            <option value="4gb-v2">4GB - 100% CPU - 3GB Disk</option>
+            <option value="5gb-v2">5GB - 120% CPU - 4GB Disk</option>
+            <option value="10gb-v2">10GB - 220% CPU - 9GB Disk</option>
+            <option value="unlimited-v2">Unlimited - Unlimited CPU & Disk</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition">
+          Create Panel
+        </button>
+      </form>
 
-    <form id="panelForm" class="space-y-4">
-      <input id="panelName" type="text" placeholder="Nama Panel"
-        class="w-full p-3 rounded-xl bg-white/20 placeholder-white/70" />
+      <div id="result" class="hidden mt-6 p-4 bg-green-50 border border-green-300 rounded text-sm whitespace-pre-wrap"></div>
+      <div id="error" class="hidden mt-6 p-4 bg-red-50 border border-red-300 text-red-700 rounded font-semibold"></div>
+    </div>
+  </main>
 
-      <select id="plan" class="w-full p-3 rounded-xl bg-white/20 text-white">
-        <option value="">-- Pilih Plan --</option>
-        <option value="1">1 GB</option>
-        <option value="2">2 GB</option>
-        <option value="3">3 GB</option>
-      </select>
-
-      <button type="submit"
-        class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold">
-        Buat Sekarang
-      </button>
-    </form>
-
-    <div id="loading" class="text-sm mt-4 hidden">⏳ Memproses...</div>
-    <pre id="result" class="whitespace-pre-wrap text-sm mt-4 bg-black/30 p-4 rounded-xl hidden"></pre>
-    <pre id="error" class="text-sm text-red-300 mt-2 hidden"></pre>
-  </div>
+  <footer class="bg-white border-t p-4 text-center text-sm text-gray-500">
+    &copy; 2025 Kenjaa Hosting
+  </footer>
 
   <script>
+    const resultBox = document.getElementById("result");
+    const errorBox = document.getElementById("error");
     const form = document.getElementById("panelForm");
-    const result = document.getElementById("result");
-    const error = document.getElementById("error");
-    const loading = document.getElementById("loading");
+
+    function randomHex(len = 4) {
+      const chars = 'abcdef0123456789';
+      return Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      resultBox.classList.add("hidden");
+      errorBox.classList.add("hidden");
 
-      result.classList.add("hidden");
-      error.classList.add("hidden");
-      loading.classList.remove("hidden");
+      const username = form.username.value.trim().toLowerCase();
+      const plan = form.plan.value;
+      const password = username + randomHex(4);
 
-      const name = document.getElementById("panelName").value.trim();
-      const plan = document.getElementById("plan").value;
+      if (!username || !plan) return;
 
-      if (!name || !plan) {
-        error.textContent = "❌ Isi semua field.";
-        error.classList.remove("hidden");
-        loading.classList.add("hidden");
-        return;
-      }
+      resultBox.textContent = "Creating panel, please wait...";
+      resultBox.classList.remove("hidden");
 
       try {
-        const res = await fetch("http://localhost:3000/create", {  // Ganti dengan URL relays kamu
+        const res = await fetch("/api/relay", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ name, plan })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username,
+            email: `${username}@gmail.com`,
+            name: username.charAt(0).toUpperCase() + username.slice(1) + " Server",
+            password,
+            plan,
+          }),
         });
 
         const data = await res.json();
-        loading.classList.add("hidden");
+        if (!res.ok) throw new Error(data.error || "Something went wrong.");
 
-        if (!res.ok) {
-          error.textContent = "❌ Gagal: " + (data.error || "Terjadi kesalahan.");
-          error.classList.remove("hidden");
-          return;
-        }
+        resultBox.textContent = `✅ Panel Created!
 
-        result.innerText = `
-✅ Panel berhasil dibuat!
+👤 Username: ${data.username}
+🔐 Password: ${data.password}
+📦 RAM: ${data.specs.ram === "0" ? "Unlimited" : data.specs.ram + "MB"}
+💽 Disk: ${data.specs.disk === "0" ? "Unlimited" : data.specs.disk + "MB"}
+💻 CPU: ${data.specs.cpu === "0" ? "Unlimited" : data.specs.cpu + "%"}
 
-👤 Username : ${data.username}
-📧 Email    : ${data.email}
-🔑 Password : ${data.password}
-📦 RAM      : ${data.ram} MB
-💽 Disk     : ${data.disk} MB
-🧠 CPU      : ${data.cpu}%
-🆔 Server ID: ${data.server_id}
-        `.trim();
-        result.classList.remove("hidden");
+🌐 Login Panel: ${data.panel}
 
+⏳ Panel aktif 30 hari
+📩 Simpan data ini baik-baik.
+        `;
       } catch (err) {
-        loading.classList.add("hidden");
-        error.textContent = "❌ Gagal konek ke relay.js";
-        error.classList.remove("hidden");
-        console.error(err);
+        errorBox.textContent = "❌ " + err.message;
+        errorBox.classList.remove("hidden");
+        resultBox.classList.add("hidden");
       }
     });
   </script>

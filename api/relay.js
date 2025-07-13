@@ -1,115 +1,131 @@
-// relay.js — Tanpa package.json, bisa langsung run di Replit
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Only POST method is allowed' });
+  }
 
-const express = require("express");
-const fetch = require("node-fetch");
-const cors = require("cors");
-const path = require("path");
+  const {
+    username,
+    email,
+    name,
+    password,
+    plan,
+  } = req.body;
 
-const app = express();
-const PORT = 3000;
+  // === KONFIGURASI ===
+  const apikey = "apixxx";
+  const domain = "https://kenja-ganteng.kenjaapublik.my.id";
+  const egg = 15;
+  const nest = 5;
+  const location = 1;
 
-// 🔧 Konfigurasi
-const PANEL_URL = "https://kenja-ganteng.kenjaapublik.my.id/";
-const API_KEY = "ptla_RKC13A19K8mEKJrJidUtlKyFZrkh1dkTqCGymPvxM5Z"; // Ganti dengan API key admin kamu
-const NEST_ID = 5;
-const EGG_ID = 15;
-const LOCATION_ID = 1;
-const DOCKER_IMAGE = "ghcr.io/parkervcp/yolks:nodejs_18"; // Ganti kalau perlu
+  const plans = {
+    "1gb-v2": { ram: "1000", disk: "1000", cpu: "40" },
+    "2gb-v2": { ram: "2000", disk: "2000", cpu: "60" },
+    "3gb-v2": { ram: "3000", disk: "2000", cpu: "80" },
+    "4gb-v2": { ram: "4000", disk: "3000", cpu: "100" },
+    "5gb-v2": { ram: "5000", disk: "4000", cpu: "120" },
+    "6gb-v2": { ram: "6000", disk: "5000", cpu: "140" },
+    "7gb-v2": { ram: "7000", disk: "6000", cpu: "160" },
+    "8gb-v2": { ram: "8000", disk: "7000", cpu: "180" },
+    "9gb-v2": { ram: "9000", disk: "8000", cpu: "200" },
+    "10gb-v2": { ram: "10000", disk: "9000", cpu: "220" },
+    "unlimited-v2": { ram: "0", disk: "0", cpu: "0" },
+  };
 
-const PLANS = {
-  "1": { ram: 1024, disk: 1024, cpu: 40 },
-  "2": { ram: 2048, disk: 2048, cpu: 60 },
-  "3": { ram: 3072, disk: 3072, cpu: 80 }
-};
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.static("public")); // Letakkan index.html di folder /public
-
-// Endpoint utama
-app.post("/create", async (req, res) => {
-  const { name, plan } = req.body;
-  const specs = PLANS[plan];
-  if (!name || !specs) return res.status(400).json({ error: "Nama atau plan tidak valid" });
-
-  const username = name.toLowerCase().replace(/\s+/g, "");
-  const email = `${username}@xemz.my.id`;
-  const password = username + "123";
+  const spec = plans[plan];
+  if (!spec) return res.status(400).json({ error: "Invalid plan" });
 
   try {
-    // 1. Buat User
-    const userRes = await fetch(`${PANEL_URL}/api/application/users`, {
-      method: "POST",
+    // Buat user
+    const userRes = await fetch(`${domain}/api/application/users`, {
+      method: 'POST',
       headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apikey}`,
+        'Accept': 'application/json',
       },
       body: JSON.stringify({
-        username,
         email,
+        username,
         first_name: name,
-        last_name: "Auto",
-        password
+        last_name: "Server",
+        language: "en",
+        password,
       })
     });
+    const userData = await userRes.json();
+    if (userData.errors) throw new Error(JSON.stringify(userData.errors[0]));
 
-    const user = await userRes.json();
-    if (!userRes.ok) return res.status(400).json({ error: user.errors?.[0]?.detail || "Gagal buat user" });
+    const userId = userData.attributes.id;
 
-    // 2. Buat Server
-    const serverRes = await fetch(`${PANEL_URL}/api/application/servers`, {
-      method: "POST",
+    // Ambil startup egg
+    const eggRes = await fetch(`${domain}/api/application/nests/${nest}/eggs/${egg}`, {
+      method: 'GET',
       headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
+        'Authorization': `Bearer ${apikey}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    });
+    const eggData = await eggRes.json();
+    if (eggData.errors) throw new Error(JSON.stringify(eggData.errors[0]));
+
+    const startup = eggData.attributes.startup;
+
+    // Buat server
+    const serverRes = await fetch(`${domain}/api/application/servers`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apikey}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         name,
-        user: user.id,
-        nest: NEST_ID,
-        egg: EGG_ID,
-        docker_image: DOCKER_IMAGE,
-        startup: "npm install && node index.js",
+        user: userId,
+        egg,
+        nest,
+        docker_image: "ghcr.io/parkervcp/yolks:nodejs_18",
+        startup,
         environment: {
-          NODE_VERSION: "18"
+          INST: "npm",
+          USER_UPLOAD: "0",
+          AUTO_UPDATE: "0",
+          CMD_RUN: "npm start",
         },
         limits: {
-          memory: specs.ram,
+          memory: spec.ram,
           swap: 0,
-          disk: specs.disk,
+          disk: spec.disk,
           io: 500,
-          cpu: specs.cpu
+          cpu: spec.cpu,
         },
         feature_limits: {
-          databases: 1,
-          backups: 1,
-          allocations: 1
+          databases: 5,
+          backups: 5,
+          allocations: 5,
         },
-        allocation: {
-          default: 1 // ⚠️ HARUS diganti dengan ID allocation aktif kamu!
-        }
+        deploy: {
+          locations: [location],
+          dedicated_ip: false,
+          port_range: [],
+        },
+        description: "Created via Auto Panel",
       })
     });
 
-    const server = await serverRes.json();
-    if (!serverRes.ok) return res.status(400).json({ error: server.errors?.[0]?.detail || "Gagal buat server" });
+    const serverData = await serverRes.json();
+    if (serverData.errors) throw new Error(JSON.stringify(serverData.errors[0]));
 
-    res.json({
-      message: "✅ Panel berhasil dibuat!",
+    res.status(200).json({
+      message: "Success",
       username,
-      email,
       password,
-      server_id: server.id
+      specs: spec,
+      panel: domain,
     });
 
   } catch (err) {
-    console.error("ERROR:", err);
-    res.status(500).json({ error: "Gagal konek ke API panel." });
+    res.status(500).json({ error: err.message });
   }
-});
-
-// Jalankan server
-app.listen(PORT, () => {
-  console.log(`✅ Relay jalan di http://localhost:${PORT}`);
-});
+}

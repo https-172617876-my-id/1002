@@ -13,16 +13,51 @@
     }
   </style>
 </head>
-<body class="bg-gray-50 flex flex-col h-full font-sans">
+<body class="bg-black text-white flex flex-col h-full font-sans">
 
-  <header class="bg-white shadow p-4">
-    <div class="flex justify-between items-center px-6">
-      <h1 class="text-xl font-bold text-indigo-600">Kenjaa Panel Creator</h1>
+  <header class="p-4">
+    <div class="flex justify-between items-center px-4">
+      <h1 class="text-xl font-bold text-white">Hi ptxemz, <br><span class="text-3xl">Welcome back!</span></h1>
+      <div class="text-white text-2xl">
+        ☰
+      </div>
     </div>
   </header>
 
-  <main class="flex-grow flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white rounded shadow p-6">
+  <main class="flex-grow overflow-auto px-4 pb-10">
+    <!-- Section Sosmed -->
+    <section class="mt-4">
+      <h2 class="text-lg font-semibold uppercase text-gray-300 mb-4">About & Social Media Admin</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-zinc-900 p-4 rounded-xl flex flex-col items-center text-center">
+          <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-16 h-16 mb-2 rounded-lg"/>
+          <h3 class="font-bold">WA ADMIN</h3>
+          <p class="text-sm text-gray-400">contact admin</p>
+          <a href="#" class="mt-2 w-full bg-black py-2 rounded-lg">CHAT</a>
+        </div>
+        <div class="bg-zinc-900 p-4 rounded-xl flex flex-col items-center text-center">
+          <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-16 h-16 mb-2 rounded-lg"/>
+          <h3 class="font-bold">CHANNEL WA</h3>
+          <p class="text-sm text-gray-400">join sekarang !!</p>
+          <a href="#" class="mt-2 w-full bg-black py-2 rounded-lg">MASUK</a>
+        </div>
+        <div class="bg-zinc-900 p-4 rounded-xl flex flex-col items-center text-center">
+          <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-16 h-16 mb-2 rounded-lg"/>
+          <h3 class="font-bold">GROUP ADMIN</h3>
+          <p class="text-sm text-gray-400">join sekarang !!</p>
+          <a href="#" class="mt-2 w-full bg-black py-2 rounded-lg">MASUK</a>
+        </div>
+        <div class="bg-zinc-900 p-4 rounded-xl flex flex-col items-center text-center">
+          <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="w-16 h-16 mb-2 rounded-lg"/>
+          <h3 class="font-bold">GROUP ADMIN</h3>
+          <p class="text-sm text-gray-400">join sekarang !!</p>
+          <a href="#" class="mt-2 w-full bg-black py-2 rounded-lg">MASUK</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Form -->
+    <section class="mt-10 bg-white text-black p-6 rounded-xl max-w-md mx-auto">
       <h2 class="text-2xl font-semibold text-indigo-700 text-center mb-6">Create Your Panel</h2>
       <form id="panelForm" class="space-y-4">
         <div>
@@ -50,7 +85,7 @@
 
       <div id="result" class="hidden mt-6 p-4 bg-green-50 border border-green-300 rounded text-sm whitespace-pre-wrap"></div>
       <div id="error" class="hidden mt-6 p-4 bg-red-50 border border-red-300 text-red-700 rounded font-semibold"></div>
-    </div>
+    </section>
   </main>
 
   <script>

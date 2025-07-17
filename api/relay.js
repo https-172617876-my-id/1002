@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
   // === KONFIGURASI ===
   const apikey = "ptla_Fr8XiFTn0iPUy0653BlsEHVoQl7N5QMVVPemA37pSUE";
-  const domain = "https://kenja-ganteng.kenjaapublik.my.id";
+  const domain = "https://kenjapublic.publicserver.my.id";
   const egg = 15;
   const nest = 5;
   const location = 1;

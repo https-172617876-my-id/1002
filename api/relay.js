@@ -12,8 +12,8 @@ export default async function handler(req, res) {
   } = req.body;
 
   // === KONFIGURASI ===
-  const apikey = "ptla_TbgU0Z92ycsUbenPtW0UAiLkfRQWqtL54qhgApKxPcT";
-  const domain = "https://panelbot.kenjaapublik.my.id";
+  const apikey = "ptla_6zgcC6NpN7Med2HvMwEWQNqd5uXtncsLTbHet1rgR3P";
+  const domain = "https://xemzreal.zwmhost.biz.id/";
   const egg = 15;
   const nest = 5;
   const location = 1;
